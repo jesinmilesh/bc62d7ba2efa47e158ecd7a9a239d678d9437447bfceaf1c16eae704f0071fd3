@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — Cape Secure Solutions</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="assets/logo/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=2.0">
+</head>
+<body style="background: #020e17;">
+
+  <div class="login-view">
+    <div class="login-card">
+      <img src="assets/logo/cape-secure-logo.png" alt="Cape Secure Logo" class="login-logo">
+      <h1 class="login-title">Administrator Login</h1>
+      <p class="login-subtitle">
+        Enter authorized administrative credentials to access Cape Secure customer accounts, invoices, and billing.
+      </p>
+
+      <div class="login-alert" id="loginAlert"></div>
+
+      <form id="standaloneLoginForm">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="standaloneEmail">Email Address</label>
+          <input type="email" id="standaloneEmail" class="form-input" placeholder="admin@capesecure.com" value="admin@capesecure.com" required autofocus>
+        </div>
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="standalonePassword">Password</label>
+          <input type="password" id="standalonePassword" class="form-input" placeholder="••••••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="btnLoginSubmit">
+          Authenticate & Access Console
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="admin-toast-container" id="toastContainer"></div>
+
+  <script src="config.js?v=2.0"></script>
+  <script>
+    const form = document.getElementById('standaloneLoginForm');
+    const alertBox = document.getElementById('loginAlert');
+    const apiBase = (window.ADMIN_CONFIG && window.ADMIN_CONFIG.API_BASE_URL) || window.location.origin;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('standaloneEmail').value.trim();
+      const password = document.getElementById('standalonePassword').value;
+      const btn = document.getElementById('btnLoginSubmit');
+
+      btn.disabled = true;
+      btn.innerText = 'Verifying Credentials...';
+      alertBox.className = 'login-alert';
+      alertBox.style.display = 'none';
+
+      const configuredAdmin = (window.ADMIN_CONFIG && window.ADMIN_CONFIG.ADMIN_CREDENTIALS) || {
+        email: 'admin@capesecure.com',
+        password: 'CapeSecure@2026!',
+        name: 'Master Administrator',
+        role: 'admin'
+      };
+
+      const isMasterAdmin = (
+        email.toLowerCase() === configuredAdmin.email.toLowerCase() &&
+        password === configuredAdmin.password
+      );
+
+      try {
+        const res = await fetch(`${apiBase}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.success && data.token) {
+          localStorage.setItem('cape_admin_session_token', data.token);
+          if (data.user) {
+            localStorage.setItem('cape_admin_user', JSON.stringify(data.user));
+          }
+          window.location.href = 'index.html';
+          return;
+        }
+
+        if (isMasterAdmin) {
+          const masterToken = 'cs_admin_' + btoa(`${configuredAdmin.email}:${Date.now()}`);
+          localStorage.setItem('cape_admin_session_token', masterToken);
+          localStorage.setItem('cape_admin_user', JSON.stringify({
+            email: configuredAdmin.email,
+            name: configuredAdmin.name,
+            role: configuredAdmin.role
+          }));
+          window.location.href = 'index.html';
+          return;
+        }
+
+        alertBox.className = 'login-alert error';
+        alertBox.innerText = data.message || 'Invalid administrator email or password.';
+        alertBox.style.display = 'block';
+      } catch (err) {
+        if (isMasterAdmin) {
+          const masterToken = 'cs_admin_' + btoa(`${configuredAdmin.email}:${Date.now()}`);
+          localStorage.setItem('cape_admin_session_token', masterToken);
+          localStorage.setItem('cape_admin_user', JSON.stringify({
+            email: configuredAdmin.email,
+            name: configuredAdmin.name,
+            role: configuredAdmin.role
+          }));
+          window.location.href = 'index.html';
+          return;
+        }
+        alertBox.className = 'login-alert error';
+        alertBox.innerText = 'Unable to connect to backend API server.';
+        alertBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Authenticate & Access Console';
+      }
+    });
+  </script>
+</body>
+</html>

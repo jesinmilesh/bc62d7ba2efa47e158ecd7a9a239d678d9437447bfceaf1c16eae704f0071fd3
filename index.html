@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Control Center — Cape Secure Solutions</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="assets/logo/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=2.0">
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="admin-navbar">
+    <div class="admin-brand">
+      <img src="assets/logo/cape-secure-logo.png" alt="Cape Secure Logo">
+      <div class="admin-brand-title">
+        <span class="cape">CAPE</span><span class="secure">SECURE</span> SOLUTIONS
+      </div>
+      <span class="admin-badge">ADMIN CONSOLE</span>
+    </div>
+
+    <div class="admin-nav-actions">
+      <div class="user-pill" id="userPill" style="display: none;">
+        <span class="user-status-dot"></span>
+        <span id="userEmailDisplay">admin@capesecure.com</span>
+      </div>
+      <a href="https://capesecure.vercel.app/" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" id="btnViewPublic">
+        Public Website &nearr;
+      </a>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnLogout" style="display: none;">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Login Gate (Shown when not authenticated) -->
+  <main class="login-view" id="loginGate">
+    <div class="login-card">
+      <img src="assets/logo/cape-secure-logo.png" alt="Cape Secure Logo" class="login-logo">
+      <h1 class="login-title">Administrator Access</h1>
+      <p class="login-subtitle">
+        Enter authorized administrative credentials to access Cape Secure customer accounts, invoices, and billing.
+      </p>
+
+      <div class="login-alert" id="loginAlert"></div>
+
+      <form id="adminLoginForm">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="loginEmail">Admin Email</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="admin@capesecure.com" value="admin@capesecure.com" required autofocus>
+        </div>
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="btnLoginSubmit">
+          Authenticate Session
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Authenticated Admin Layout (Shown when logged in) -->
+  <div class="admin-container" id="adminDashboard" style="display: none;">
+
+    <!-- Left Navigation Sidebar -->
+    <aside class="admin-sidebar">
+      <span class="sidebar-heading">Main Navigation</span>
+      <div class="admin-nav-item active" data-tab="dashboard">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="admin-nav-item" data-tab="enquiries">
+        <span class="nav-icon">📥</span> Customer Enquiries
+      </div>
+      <div class="admin-nav-item" data-tab="customers">
+        <span class="nav-icon">👥</span> Customers
+      </div>
+      <div class="admin-nav-item" data-tab="orders">
+        <span class="nav-icon">📋</span> Orders & Requests
+      </div>
+      <div class="admin-nav-item" data-tab="quotations">
+        <span class="nav-icon">📑</span> Quotations
+      </div>
+      <div class="admin-nav-item" data-tab="invoices">
+        <span class="nav-icon">🧾</span> Invoices & Payments
+      </div>
+      <div class="admin-nav-item" data-tab="projects">
+        <span class="nav-icon">🚀</span> Projects
+      </div>
+
+      <span class="sidebar-heading" style="margin-top: 1rem;">System & Audit</span>
+      <div class="admin-nav-item" data-tab="emails">
+        <span class="nav-icon">✉️</span> Email Logs
+      </div>
+      <div class="admin-nav-item" data-tab="audit">
+        <span class="nav-icon">📜</span> Audit Logs
+      </div>
+      <div class="admin-nav-item" data-tab="settings">
+        <span class="nav-icon">⚙️</span> Company Settings
+      </div>
+    </aside>
+
+    <!-- Content Workspace -->
+    <main class="admin-main">
+
+      <!-- ===================================================================
+           TAB 1: DASHBOARD
+           =================================================================== -->
+      <section class="tab-pane active" id="tab-dashboard">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Operations Command Center</h2>
+            <p class="section-desc">Real-time status of enquiries, quotations, billings, and active developments.</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btnRefreshDashboard">↻ Refresh</button>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">New Enquiries</span>
+            <span class="metric-val aqua" id="statNewEnquiries">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Reviewing</span>
+            <span class="metric-val cyan" id="statReviewing">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Quotations Pending</span>
+            <span class="metric-val gold" id="statQuotationPending">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Payment Pending</span>
+            <span class="metric-val orange" id="statPaymentPending">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Active Projects</span>
+            <span class="metric-val" id="statActiveProjects">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Total Revenue</span>
+            <span class="metric-val green" id="statRevenue">₹0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Outstanding Balance</span>
+            <span class="metric-val gold" id="statBalance">₹0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Total Enquiries</span>
+            <span class="metric-val" id="statTotalEnquiries">0</span>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="admin-card">
+          <div class="card-title">
+            <span>Recent Activity Audit Feed</span>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('audit')">View All Logs &rarr;</button>
+          </div>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                  <th>Entity ID</th>
+                  <th>Actor</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardActivityTable">
+                <tr><td colspan="5" style="text-align: center; color: var(--admin-text-dim);">Loading activities...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB: CUSTOMER ENQUIRIES & WORKFLOW
+           =================================================================== -->
+      <section class="tab-pane" id="tab-enquiries">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Customer Enquiries & Quotation Flow</h2>
+            <p class="section-desc">Authoritative customer project requests, status workflow progression, and quotation conversion.</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btnRefreshEnquiries">↻ Refresh</button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-input" id="searchEnquiries" placeholder="Search by enquiry ID, customer, business, email...">
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <select class="form-select" id="filterEnquiryStatus" style="width: 200px;">
+              <option value="">All Statuses</option>
+              <option value="NEW">NEW</option>
+              <option value="REVIEWING">REVIEWING</option>
+              <option value="CONTACTED">CONTACTED</option>
+              <option value="QUOTATION_PREPARED">QUOTATION_PREPARED</option>
+              <option value="QUOTATION_SENT">QUOTATION_SENT</option>
+              <option value="CUSTOMER_APPROVED">CUSTOMER_APPROVED</option>
+              <option value="PAYMENT_PENDING">PAYMENT_PENDING</option>
+              <option value="PAYMENT_RECEIVED">PAYMENT_RECEIVED</option>
+              <option value="PROJECT_STARTED">PROJECT_STARTED</option>
+              <option value="IN_PROGRESS">IN_PROGRESS</option>
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="CLOSED">CLOSED</option>
+              <option value="ON_HOLD">ON_HOLD</option>
+              <option value="CANCELLED">CANCELLED</option>
+              <option value="REJECTED">REJECTED</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Enquiry ID</th>
+                  <th>Customer & Business</th>
+                  <th>Contact Details</th>
+                  <th>Package & Budget</th>
+                  <th>Workflow Status</th>
+                  <th>Assigned Admin</th>
+                  <th>Received Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="enquiriesTableBody">
+                <tr><td colspan="8" style="text-align: center; color: var(--admin-text-dim);">Loading customer enquiries...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 2: CUSTOMERS
+           =================================================================== -->
+      <section class="tab-pane" id="tab-customers">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Customer Management</h2>
+            <p class="section-desc">Directory of all client accounts, order volume, and billing history.</p>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-input" id="searchCustomers" placeholder="Search by name, business, email...">
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Customer ID</th>
+                  <th>Client Name</th>
+                  <th>Business / Entity</th>
+                  <th>Contact</th>
+                  <th>Orders</th>
+                  <th>Invoices</th>
+                  <th>Total Billed</th>
+                  <th>Balance</th>
+                  <th>Payment Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody">
+                <tr><td colspan="10" style="text-align: center; color: var(--admin-text-dim);">Loading customer data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 3: ORDERS & REQUESTS
+           =================================================================== -->
+      <section class="tab-pane" id="tab-orders">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Client Requests & Orders</h2>
+            <p class="section-desc">Inbound quotes, package selections, and project requirements from the public website.</p>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-input" id="searchOrders" placeholder="Search order ID, client...">
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <select class="form-select" id="filterOrderStatus" style="width: 180px;">
+              <option value="">All Statuses</option>
+              <option value="enquiry">Enquiry / New</option>
+              <option value="quotation">Quotation Created</option>
+              <option value="approved">Quotation Approved</option>
+              <option value="invoiceGenerated">Invoice Generated</option>
+              <option value="paid">Paid</option>
+              <option value="development">Development</option>
+              <option value="delivered">Delivered</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Client</th>
+                  <th>Package / Plan</th>
+                  <th>Requirements</th>
+                  <th>Calculated Total</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <tr><td colspan="8" style="text-align: center; color: var(--admin-text-dim);">Loading orders...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 4: QUOTATIONS
+           =================================================================== -->
+      <section class="tab-pane" id="tab-quotations">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Quotation Management</h2>
+            <p class="section-desc">Create formal digital quotations with line items, tax, and automatic PDF rendering.</p>
+          </div>
+          <button class="btn btn-gold" id="btnOpenCreateQuoteModal">+ Create Quotation</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Quotation ID</th>
+                  <th>Order Ref</th>
+                  <th>Client</th>
+                  <th>Issue Date</th>
+                  <th>Valid Until</th>
+                  <th>Quoted Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="quotationsTableBody">
+                <tr><td colspan="8" style="text-align: center; color: var(--admin-text-dim);">Loading quotations...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 5: INVOICES & PAYMENTS
+           =================================================================== -->
+      <section class="tab-pane" id="tab-invoices">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Invoices & Billing</h2>
+            <p class="section-desc">Official tax invoices, payment reconciliation, and balance monitoring.</p>
+          </div>
+          <button class="btn btn-gold" id="btnOpenCreateInvoiceModal">+ Create Invoice</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Invoice ID</th>
+                  <th>Order Ref</th>
+                  <th>Client</th>
+                  <th>Due Date</th>
+                  <th>Invoice Total</th>
+                  <th>Amount Paid</th>
+                  <th>Balance Due</th>
+                  <th>Payment Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invoicesTableBody">
+                <tr><td colspan="9" style="text-align: center; color: var(--admin-text-dim);">Loading invoices...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 6: PROJECTS LIFECYCLE
+           =================================================================== -->
+      <section class="tab-pane" id="tab-projects">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Project Delivery Lifecycle</h2>
+            <p class="section-desc">Manage project milestones: Planning, Design, Development, Testing, Delivery, and Renewals.</p>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Client</th>
+                  <th>Service</th>
+                  <th>Current Stage</th>
+                  <th>Kickoff Date</th>
+                  <th>Delivery Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="projectsTableBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--admin-text-dim);">Loading projects...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 7: EMAIL LOGS
+           =================================================================== -->
+      <section class="tab-pane" id="tab-emails">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Transactional Email Logs</h2>
+            <p class="section-desc">Brevo transactional email dispatch logs with timestamps and delivery statuses.</p>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Recipient</th>
+                  <th>Template / Type</th>
+                  <th>Subject</th>
+                  <th>Status</th>
+                  <th>Reference</th>
+                </tr>
+              </thead>
+              <tbody id="emailLogsTableBody">
+                <tr><td colspan="6" style="text-align: center; color: var(--admin-text-dim);">Loading email logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 8: AUDIT LOGS
+           =================================================================== -->
+      <section class="tab-pane" id="tab-audit">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Security & Audit Logs</h2>
+            <p class="section-desc">Immutable log of administrator logins, quotation creation, and billing adjustments.</p>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                  <th>Entity ID</th>
+                  <th>Actor</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogsTableBody">
+                <tr><td colspan="5" style="text-align: center; color: var(--admin-text-dim);">Loading audit logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 9: COMPANY SETTINGS
+           =================================================================== -->
+      <section class="tab-pane" id="tab-settings">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Company Settings</h2>
+            <p class="section-desc">Configure business branding, payment details (UPI/Bank), and invoice defaults.</p>
+          </div>
+          <button class="btn btn-primary" id="btnSaveSettings">Save Settings</button>
+        </div>
+
+        <form id="settingsForm">
+          <div class="admin-card">
+            <div class="card-title">Business Profile & Contact</div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Brand Name</label>
+                <input type="text" class="form-input" id="cfgBrandName" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Legal Name</label>
+                <input type="text" class="form-input" id="cfgLegalName" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="cfgEmail" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="text" class="form-input" id="cfgPhone" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">WhatsApp Number</label>
+                <input type="text" class="form-input" id="cfgWhatsApp" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">City, State</label>
+                <input type="text" class="form-input" id="cfgCityState" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="card-title">Banking & UPI Payment Configuration</div>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="form-label">UPI ID</label>
+                <input type="text" class="form-input" id="cfgUpiId">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bank Name</label>
+                <input type="text" class="form-input" id="cfgBankName">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Account Number</label>
+                <input type="text" class="form-input" id="cfgAccountNo">
+              </div>
+              <div class="form-group">
+                <label class="form-label">IFSC Code</label>
+                <input type="text" class="form-input" id="cfgIfsc">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Branch</label>
+                <input type="text" class="form-input" id="cfgBranch">
+              </div>
+              <div class="form-group">
+                <label class="form-label">GST / Tax Rate (%)</label>
+                <input type="number" class="form-input" id="cfgTaxRate" step="0.5">
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="card-title">Default Terms & Conditions</div>
+            <div class="form-group">
+              <label class="form-label">Quotation Terms</label>
+              <textarea class="form-textarea" id="cfgQuoteTerms" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Invoice Terms</label>
+              <textarea class="form-textarea" id="cfgInvoiceTerms" rows="3"></textarea>
+            </div>
+          </div>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       MODALS
+       ========================================================================= -->
+
+  <!-- Modal: Create Quotation -->
+  <div class="modal-overlay" id="modalCreateQuote">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Create Formal Quotation</h3>
+        <button class="modal-close" onclick="closeModal('modalCreateQuote')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="createQuoteForm">
+          <div class="form-group">
+            <label class="form-label">Select Order Reference</label>
+            <select class="form-select" id="quoteOrderIdSelect" required>
+              <option value="">Select an order...</option>
+            </select>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Issue Date</label>
+              <input type="date" class="form-input" id="quoteIssueDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Valid Until</label>
+              <input type="date" class="form-input" id="quoteValidUntil" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quotation Notes</label>
+            <textarea class="form-textarea" id="quoteNotes" rows="2" placeholder="Custom note for the client..."></textarea>
+          </div>
+          <div class="form-group" style="margin-top: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+              <input type="checkbox" id="quoteSendEmail" checked>
+              Auto-dispatch Quotation Email with PDF link to client
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modalCreateQuote')">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnSubmitCreateQuote">Generate Quotation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create Invoice -->
+  <div class="modal-overlay" id="modalCreateInvoice">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Generate Tax Invoice</h3>
+        <button class="modal-close" onclick="closeModal('modalCreateInvoice')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="createInvoiceForm">
+          <div class="form-group">
+            <label class="form-label">Select Order Reference</label>
+            <select class="form-select" id="invoiceOrderIdSelect" required>
+              <option value="">Select an order...</option>
+            </select>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Invoice Date</label>
+              <input type="date" class="form-input" id="invoiceDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Due Date</label>
+              <input type="date" class="form-input" id="invoiceDueDate" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Invoice Notes</label>
+            <textarea class="form-textarea" id="invoiceNotes" rows="2" placeholder="Payment terms or instructions..."></textarea>
+          </div>
+          <div class="form-group" style="margin-top: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+              <input type="checkbox" id="invoiceSendEmail" checked>
+              Auto-dispatch Invoice Email with PDF link to client
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modalCreateInvoice')">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnSubmitCreateInvoice">Issue Invoice</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Record Payment -->
+  <div class="modal-overlay" id="modalRecordPayment">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Record Payment</h3>
+        <button class="modal-close" onclick="closeModal('modalRecordPayment')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="recordPaymentForm">
+          <input type="hidden" id="payInvoiceId">
+          <div class="form-group">
+            <label class="form-label">Invoice Reference</label>
+            <input type="text" class="form-input" id="payInvoiceDisplay" readonly>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Amount (₹)</label>
+              <input type="number" class="form-input" id="payAmount" min="1" step="any" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Method</label>
+              <select class="form-select" id="payMethod">
+                <option value="UPI">UPI / GPay / PhonePe</option>
+                <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
+                <option value="Cash">Cash</option>
+                <option value="Gateway">Online Gateway</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Transaction / Ref ID</label>
+              <input type="text" class="form-input" id="payRefId" placeholder="UTR or Transaction #">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Date</label>
+              <input type="date" class="form-input" id="payDate" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Notes</label>
+            <input type="text" class="form-input" id="payNotes" placeholder="Advance 50%, Final settlement, etc.">
+          </div>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+              <input type="checkbox" id="paySendReceipt" checked>
+              Send Payment Confirmation & Receipt Email to client
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modalRecordPayment')">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnSubmitPayment">Record Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Customer Enquiry Detail & Workflow Actions -->
+  <div class="modal-overlay" id="modalEnquiryDetail">
+    <div class="modal-card" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="enqModalTitle">Customer Enquiry</h3>
+        <button class="modal-close" onclick="closeModal('modalEnquiryDetail')">&times;</button>
+      </div>
+      <div class="modal-body" id="enqModalBody">
+        <!-- Rendered dynamically by renderEnquiryModal -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-gold" id="btnEnqCreateQuotation">Prepare Quotation &rarr;</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modalEnquiryDetail')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Customer Profile & Order History -->
+  <div class="modal-overlay" id="modalCustomerProfile">
+    <div class="modal-card" style="max-width: 750px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="custModalTitle">Customer Profile</h3>
+        <button class="modal-close" onclick="closeModal('modalCustomerProfile')">&times;</button>
+      </div>
+      <div class="modal-body" id="custModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modalCustomerProfile')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="admin-toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="config.js?v=2.0"></script>
+  <script src="app.js?v=2.0"></script>
+</body>
+</html>
